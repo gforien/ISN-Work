@@ -1,4 +1,4 @@
-ISN-WOrk
+ISN-Work
 ========
 
 Dépôt de code pour les projets vus en classe d'Informatique et Système du Numérique
