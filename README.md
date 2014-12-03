@@ -1,12 +1,10 @@
 ISN-Work
 ========
 
-Dépôt de code pour les projets vus en classe d'Informatique et Système du Numérique
-
-Chaque projet a son propre répertoire:
-_cli_\_exemple: projet de type console (command-line interface)
-_gui_\_exemple: projet de type graphique (graphical user interface)
-_exo_\_exemple: projet qui est un exercice demandé, le type n'importe donc pas
-_help_: dossier regroupant des structures de code notables
-
-Les projets créant une interface graphique utilisent la bibliothèque PyGobject qui fait appel à l'environnement graphique GTK3+
+Dépôt de code pour les projets vus en classe d'Informatique et Système du Numérique  
+Chaque projet a son propre répertoire:  
+*  *cli_exemple*: projet de type console (command-line interface)
+*  *gui_gtk_exemple*: projet de type graphique (graphical user interface) utilisant la bibliothèque graphique PyGObject
+*  *gui_gtk_exemple*: projet de type graphique (graphical user interface) utilisant la bilbliothèque graphique Tkinter
+*  *exo_exemple*: projet qui est un exercice demandé, le type n'importe donc pas
+*  *help*: dossier regroupant des structures de code notables
