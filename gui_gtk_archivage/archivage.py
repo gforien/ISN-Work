@@ -41,75 +41,6 @@ mois = { 1 : 'Janvier',
         12 : 'Décembre' }
 
 
-def recuperer_fichiers(liste_fichiers):
-    i = 0
-    j = 0
-    fichiers = []
-    for i in range(len(liste_fichiers)):
-        if liste_fichiers[i] == ',' and liste_fichiers[i-1] != '\\':
-            fichiers.append(liste_fichiers[j:i])
-            j = i+1
-    fichiers.append(liste_fichiers[j:len(liste_fichiers)])
-    for i in range(len(fichiers)):
-        fichiers[i] = fichiers[i].strip()
-    return fichiers
-
-def couper_taille(taille):
-    puissance = 1
-    try:
-        taille = str(int(taille))
-    except ValueError:
-        taille = '0'
-    if len(taille)%3 != 0:
-        puissance = len(taille)//3
-        puissance = 1000**puissance
-        taille = taille[:len(taille)%3]
-    else:
-        puissance = len(taille[1:])//3
-        puissance = 1000**puissance
-        taille = taille[:3]
-    return taille+' '+taille_dic[puissance]
-
-def archiver(fichiers, nom):
-    archive = zf.ZipFile(nom, mode='w')
-    for i in fichiers:
-        archive.write(i, compress_type=zf.ZIP_DEFLATED)
-    archive.close
-
-def ajout_archive(fichiers, nom):
-    archive = zf.ZipFile(nom, mode='a')
-    for i in fichiers:
-        archive.write(i, compress_type=zf.ZIP_DEFLATED)
-    archive.close
-
-def desarchiver(archive):
-    nom_fichier = ''
-    archive = zf.ZipFile(nom, mode='r')
-    for nom_fichier in archive.namelist():
-        fichier = open(nom_fichier, 'wb')
-        fichier.write(archive.read(nom_fichier))
-        fichier.close
-        print(nom_fichier, 'extrait.')
-
-def info_archive(archive):
-    taille = ''
-    pourcent = ''
-    archive = zf.ZipFile(nom, mode='r')
-    e = archive.getinfo(archive.namelist()[0])
-    date = str(e.date_time[2])+' '+mois[e.date_time[1]]+' '+str(e.date_time[0])+'   '+str(e.date_time[3])+':'+str(e.date_time[4])
-    print()
-    print(nom.upper().center(60))
-    print(info_arc.format(date, systeme[e.create_system]))
-    for e in archive.infolist():
-        taille = couper_taille(e.file_size)
-        pourcent = str(e.compress_size*100/e.file_size)
-        if len(pourcent) > 4:
-            pourcent = pourcent[:4]
-        pourcent += '%'
-        print (info_ele.format(e.filename, taille, pourcent))
-
-
-
 class Fenetre(Gtk.Window):
 
     def __init__(self):
@@ -122,10 +53,10 @@ class Fenetre(Gtk.Window):
                        Gtk.Button(label="Réarchiver"),
                        Gtk.Button(label="Extraire"),
                        Gtk.Button(label="Info")]
-        self.bouton[0].connect("clicked", self.appeler, 0)
-        self.bouton[1].connect("clicked", self.appeler, 1)
-        self.bouton[2].connect("clicked", self.appeler, 2)
-        self.bouton[3].connect("clicked", self.appeler, 3)
+        self.bouton[0].connect("clicked", self.archiver)
+        self.bouton[1].connect("clicked", self.ajouter)
+        self.bouton[2].connect("clicked", self.extraire)
+        self.bouton[3].connect("clicked", self.info)
 ##          tous les labels utilisés
         self.label = [Gtk.Label('Nom :'),
                       Gtk.Label('.zip'),
@@ -133,7 +64,7 @@ class Fenetre(Gtk.Window):
                       Gtk.Label('Archivage :'),
                       Gtk.Label('Compression :')]
 ##          les champs d'entrée
-        self.entry = [Gtk.Entry(), Gtk.Entry(), Gtk.Entry(), Gtk.Entry()]
+        self.entry = [Gtk.Entry(), Gtk.Entry()]
 ##          les boutons radio
         self.radio = []
         self.radio.append(Gtk.RadioButton.new_from_widget(None))
@@ -189,19 +120,17 @@ class Fenetre(Gtk.Window):
         masterBox[0].pack_start(self.bouton[2], True, True, 0)
         masterBox[0].pack_start(self.bouton[3], True, True, 0)
 ##          deuxième section horizontale
-        masterBox[1].pack_start(self.label[4], True, True, 0)
+        masterBox[1].pack_start(self.label[0], True, True, 0)
         masterBox[1].pack_start(self.entry[0], True, True, 0)
-        masterBox[1].pack_start(self.label[5], True, True, 0)
+        masterBox[1].pack_start(self.label[1], True, True, 0)
 ##          troisième section horizontale
-        subBox[0].pack_start(self.label[6], True, True, 0)
+        subBox[0].pack_start(self.label[2], True, True, 0)
         subBox[1].pack_start(self.entry[1], True, True, 0)
-        subBox[1].pack_start(self.entry[2], True, True, 0)
-        subBox[1].pack_start(self.entry[3], True, True, 0)
 ##          quatrième section horizontale
-        subBox[2].pack_start(self.label[7], True, True, 0)
+        subBox[2].pack_start(self.label[3], True, True, 0)
         subBox[3].pack_start(self.radio[0], True, True, 0)
         subBox[3].pack_start(self.radio[1], True, True, 0)
-        subBox[4].pack_start(self.label[8], True, True, 0)
+        subBox[4].pack_start(self.label[4], True, True, 0)
         subBox[5].pack_start(self.radio[2], True, True, 0)
         subBox[5].pack_start(self.radio[3], True, True, 0)
         subBox[5].pack_start(self.radio[4], True, True, 0)
@@ -209,46 +138,133 @@ class Fenetre(Gtk.Window):
         subBox[5].pack_start(self.radio[6], True, True, 0)
 
 
-    def appeler(self, bouton, valeur):
-        if choix == 1:
-#            fichiers = recuperer_fichiers(input("Entrez les noms de fichiers (fichier, fichier avec espaces, fichier\,avec\,virgules ...)\nFichiers: "))
-            for i in fichiers:
-                if not os.path.isfile(i):
-                    suppr.append(i)
-            for i in suppr:
-                fichiers.remove(i)
-            archiver(fichiers, nom)
-###         supprime les fichiers après leur archivage
-            for i in fichiers:
-                os.remove(i)
-            info_archive(nom)
+###             Fonctions appelant l'objet fic de la classe FichierAArchiver
+    def archiver(self, bouton):
+        fichiers = self.entry[1].get_text()
+        self.entry[1].set_text('')
+        print(fichiers)
+        fic.recuperer_fichiers(fichiers)
+        fichiers = fic.fichiers
+        print(fichiers)
+#            for i in fichiers:
+#                os.remove(i)
+#            info_archive(nom)
 
-        elif choix == 2:
-#            nom = input("Entrez le chemin vers l'archive: ")
-            if is_zipfile(nom):
-#                fichiers = recuperer_fichiers(input("Entrez les noms de fichiers (fichier, fichier avec espaces, fichier\,avec\,virgules ...)\nFichiers: "))
-                ajout_archive(fichiers, nom)
-                for i in fichiers:
-                    os.remove(i)
-                info_archive(nom)
-        elif choix == 3:
-#            nom = input("Entrez le chemin vers l'archive: ")
-            if is_zipfile(nom):
-                desarchiver(nom)
-                os.remove(nom)
-        elif choix == 4:
-#            nom = input("Entrez le chemin vers l'archive: ")
-            if is_zipfile(nom):
-                info_archive(nom)
+    def ajouter(self, bouton):
+#            if is_zipfile(nom):
+#                ajout_archive(fichiers, nom)
+#                for i in fichiers:
+#                    os.remove(i)
+#                info_archive(nom)
+        pass
+    def extraire(self, bouton):
+#            if is_zipfile(nom):
+#                desarchiver(nom)
+#                os.remove(nom)
+        pass
+    def info(self, bouton):
+#            if is_zipfile(nom):
+#                info_archive(nom)
 
+        pass
     def pour_archivage_select(self, radio, choix):
         pass
-
     def pour_compression_select(self, radio, choix):
         pass
 
 
+
+class FichierAArchiver():
+    def __init__(self):
+        self.nom = ''
+        self.fichiers = []
+        self.taille = 0
+        self.tailleChaine = ''
+
+###             Fonctions non-spécifiques au format d'archivage
+##          crée une liste de valeurs à partir de la chaine récupérée
+##          et vérifie l'existence des fichiers
+    def recuperer_fichiers(self, listeFichiers):
+        i = 0
+        j = 0
+#       liste contenant les noms de fichiers à supprimer
+        aSupprimer = []
+        for i in range(len(listeFichiers)):
+#       ajoute une entrée à fichiers[] si le caractère est une virgule non-échapée donc séparant deux noms
+            if listeFichiers[i] == ',' and listeFichiers[i-1] != '\\':
+                self.fichiers.append(listeFichiers[j:i].strip())
+                j = i+1
+#       ajoute la fin de la chaine au tableau
+        self.fichiers.append(listeFichiers[j:len(listeFichiers)].strip())
+#       ajoute le nom à la seconde liste si elle n'existe pas
+        for i in range(len(self.fichiers)):
+            if not os.path.isfile(self.fichiers[i]):
+                aSupprimer.append(self.fichiers[i])
+#       supprime les valeurs du tableau (en supprimant les clés, la liste s'ajusterait)
+        for i in aSupprimer:
+            self.fichiers.remove(i)
+
+##          transforme un int de taille du fichier en une chaine de type "10 Mo"
+    def couper_taille(self):
+        puissance = 1
+        try:
+            self.tailleChaine = str(int(self.taille))
+        except ValueError:
+            self.tailleChaine = '0'
+#       si la taille est un entier en Ko, Mo, Go...
+        if len(self.tailleChaine)%3 != 0:
+            puissance = len(self.tailleChaine)//3
+            self.tailleChaine = self.tailleChaine[:len(self.tailleChaine)%3]
+#       si la taille est un flottant en Ko, Mo, Go...
+        else:
+            puissance = len(self.tailleChaine[1:])//3
+            self.tailleChaine = self.tailleChaine[:3]
+        self.tailleChaine += ' '+tailleChaine_dic[1000**puissance]
+
+###             ZIP
+    def zip_archiver(self):
+        archive = zf.ZipFile(self.nom, mode='w')
+        for i in fichiers:
+            archive.write(i, compress_type=zf.ZIP_DEFLATED)
+        archive.close
+
+    def zip_ajouter(self):
+        archive = zf.ZipFile(self.nom, mode='a')
+        for i in fichiers:
+            archive.write(i, compress_type=zf.ZIP_DEFLATED)
+        archive.close
+
+    def zip_extraire(self):
+        nom_fichier = ''
+        archive = zf.ZipFile(self.nom, mode='r')
+        for nom_fichier in archive.namelist():
+            fichier = open(nom_fichier, 'wb')
+            fichier.write(archive.read(nom_fichier))
+            fichier.close
+
+    def zip_info(self):
+        message = ''
+        taille = ''
+        pourcent = ''
+        archive = zf.ZipFile(self.nom, mode='r')
+
+        element = archive.getinfo(archive.namelist()[0])
+        date = str(element.date_time[2])+' '+mois[element.date_time[1]]+' '+str(element.date_time[0])+'   '+str(element.date_time[3])+':'+str(element.date_time[4])
+
+#        message += nom.upper().center(60)+'\n'
+        message += info_arc.format(nom, date, systeme[element.create_system])+'\n'
+        for element in archive.infolist():
+            taille = couper_taille(element.file_size)
+            pourcent = str(element.compress_size*100/element.file_size)
+            if len(pourcent) > 4:
+                pourcent = pourcent[:4]
+            pourcent += '%'
+            message += info_ele.format(element.filename, taille, pourcent)+'\n'
+
+
+
 if __name__ == '__main__':
+    fic = FichierAArchiver()
     fen = Fenetre()
     fen.connect('delete-event', Gtk.main_quit)
     fen.show_all()
