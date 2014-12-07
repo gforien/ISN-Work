@@ -1,4 +1,7 @@
-# with break
+###             Entrée controlée d'un nombre dans un programme console
+
+
+##          avec break
 val=0
 
 while 1:
@@ -14,7 +17,7 @@ while 1:
 
 
 
-# with boolean
+##          avec un booléen
 val=0
 check=False
 
