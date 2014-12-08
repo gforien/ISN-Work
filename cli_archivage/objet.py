@@ -1,4 +1,4 @@
-#!/usr/bin/python3.3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 class Fichier_a_archiver():

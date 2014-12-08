@@ -1,4 +1,4 @@
-#!/usr/bin/python3.3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """Module contenant la fonction conversion_binaire()"""
 
