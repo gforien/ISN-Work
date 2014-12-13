@@ -6,7 +6,7 @@ try:
     import zipfile as zf
     from gi.repository import Gtk
     import os
-except erreurr as ImportError:
+except erreur as ImportError:
     exit(erreur)
 
 
@@ -142,10 +142,13 @@ class Fenetre(Gtk.Window):
     def archiver(self, bouton):
         fichiers = self.entry[1].get_text()
         self.entry[1].set_text('')
-        print(fichiers)
         fic.recuperer_fichiers(fichiers)
-        fichiers = fic.fichiers
-        print(fichiers)
+
+        for i in fic.fichiers:
+            print("Fichier {} récuperé".format(i))
+        for i in fic.fauxFichiers:
+            print("Erreur : le fichier {} n'existe pas !".format(i))
+
 #            for i in fichiers:
 #                os.remove(i)
 #            info_archive(nom)
@@ -178,6 +181,8 @@ class FichierAArchiver():
     def __init__(self):
         self.nom = ''
         self.fichiers = []
+#       liste contenant les noms de fichiers à supprimer
+        self.fauxFichiers = []
         self.taille = 0
         self.tailleChaine = ''
 
@@ -185,10 +190,11 @@ class FichierAArchiver():
 ##          crée une liste de valeurs à partir de la chaine récupérée
 ##          et vérifie l'existence des fichiers
     def recuperer_fichiers(self, listeFichiers):
+#       remise à zéro des listes de fichiers
+        self.fichiers = []
+        self.fauxFichiers = []
         i = 0
         j = 0
-#       liste contenant les noms de fichiers à supprimer
-        aSupprimer = []
         for i in range(len(listeFichiers)):
 #       ajoute une entrée à fichiers[] si le caractère est une virgule non-échapée donc séparant deux noms
             if listeFichiers[i] == ',' and listeFichiers[i-1] != '\\':
@@ -199,9 +205,9 @@ class FichierAArchiver():
 #       ajoute le nom à la seconde liste si elle n'existe pas
         for i in range(len(self.fichiers)):
             if not os.path.isfile(self.fichiers[i]):
-                aSupprimer.append(self.fichiers[i])
+                self.fauxFichiers.append(self.fichiers[i])
 #       supprime les valeurs du tableau (en supprimant les clés, la liste s'ajusterait)
-        for i in aSupprimer:
+        for i in self.fauxFichiers:
             self.fichiers.remove(i)
 
 ##          transforme un int de taille du fichier en une chaine de type "10 Mo"
@@ -249,7 +255,8 @@ class FichierAArchiver():
         archive = zf.ZipFile(self.nom, mode='r')
 
         element = archive.getinfo(archive.namelist()[0])
-        date = str(element.date_time[2])+' '+mois[element.date_time[1]]+' '+str(element.date_time[0])+'   '+str(element.date_time[3])+':'+str(element.date_time[4])
+        date = str(element.date_time[2])+' '+mois[element.date_time[1]]+' '+str(element.date_time[0])+'   '+\
+               str(element.date_time[3])+':'+str(element.date_time[4])
 
 #        message += nom.upper().center(60)+'\n'
         message += info_arc.format(nom, date, systeme[element.create_system])+'\n'
